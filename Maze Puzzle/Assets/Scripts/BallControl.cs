@@ -2,25 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BallControl : MonoBehaviour
 {
     float transY;
     Rigidbody2D rb;
-    bool jumpEnabled;
+    bool jumpEnabled, ballActivated;
 
     [SerializeField]
-    GameObject Left, Right, Up, Down;
+    GameObject Left, Right, Up, Down, puzzleObj, spawn;
+
+    [SerializeField]
+    UIManager manager;
 
     [SerializeField] 
     GameObject LeftParent, RightParent, UpParent, DownParent;
 
+    Transform puzzle;
 
     // Start is called before the first frame update
+
+    private void Awake()
+    {
+        puzzle = GameObject.FindWithTag("Puzzle").transform;
+    }
     void Start()
     {
         rb = this.gameObject.GetComponent<Rigidbody2D>();
         jumpEnabled = false;
+        ballActivated = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -30,12 +41,50 @@ public class BallControl : MonoBehaviour
             jumpEnabled = true;
             Debug.Log(collision.transform.eulerAngles.z);
         }
+
+        if (collision.gameObject.tag == "Mushroom")
+        {
+            manager.MushroomCount("Add");
+            Destroy(collision.gameObject);
+        }
+
+        if (collision.gameObject.tag == "Spikes")
+        {
+            manager.LifeCount();
+            GameObject.FindWithTag("Puzzle").transform.rotation = puzzle.transform.rotation;
+            this.gameObject.transform.position = spawn.transform.position;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Trigger")
             jumpEnabled = false;
+    }
+
+    private void FixedUpdate()
+    {
+        if (Input.GetKey(KeyCode.M) && manager.Count > 0)
+        {
+            manager.MushroomCount("Minus");
+            this.gameObject.transform.localScale = this.gameObject.transform.localScale * (1.5f);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if ((collision.gameObject.tag == "Walls") && (ballActivated == true))
+        {
+            Destroy(collision.gameObject);
+            this.gameObject.transform.localScale = this.gameObject.transform.localScale * (0.75f);
+            ballActivated = false;
+        }
+
+
+        if (collision.gameObject.tag == "Destination")
+        {
+            SceneManager.LoadScene(4);
+        }
     }
 
     // Update is called once per frame
@@ -73,8 +122,9 @@ public class BallControl : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Space) && jumpEnabled == true)
         { 
-                rb.AddForce(new Vector2(0, 100f));
-                Debug.Log("Jump Pressed...");
-        }   
+            rb.AddForce(new Vector2(0, 100f));
+            Debug.Log("Jump Pressed...");
+            ballActivated = true;
+        }
     }
 }

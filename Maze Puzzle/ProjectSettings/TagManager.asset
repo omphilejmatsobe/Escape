@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Puzzle
   - Trigger
+  - Mushroom
+  - Walls
+  - Enemy
+  - Spikes
+  - Destination
   layers:
   - Default
   - TransparentFX

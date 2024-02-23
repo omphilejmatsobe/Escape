@@ -20,7 +20,7 @@ public class PuzzleControl : MonoBehaviour
         Hor = Input.GetAxis("Horizontal");
         Ver = Input.GetAxis("Vertical");
 
-        rotation += (Hor/ 8.5f);
+        rotation += (Hor/ 4f);
 
         transform.eulerAngles = new Vector3(0, 0, (-1) * rotation);
     }
